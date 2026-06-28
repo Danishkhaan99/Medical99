@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Medical Store Inventory</title>
+  <style>
+    body {
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(120deg, #ff9a9e, #fad0c4, #fbc2eb, #a1c4fd, #c2e9fb);
+      background-size: 400% 400%;
+      animation: gradientBG 15s ease infinite;
+      padding: 20px;
+      color: #333;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    @keyframes gradientBG {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    h2 {
+      text-align: center;
+      color: #2a6592;
+      text-shadow: 1px 1px 2px #ccc;
+    }
+
+    form {
+      background: rgba(255, 255, 255, 0.9);
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0px 3px 15px rgba(0,0,0,0.2);
+      width: 60%;
+      margin: 0 auto 20px auto;
+    }
+
+    form label {
+      display: block;
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+
+    input[type="text"], input[type="date"], input[type="number"], input[type="password"] {
+      width: 95%;
+      padding: 8px;
+      border: 1px solid #aaa;
+      border-radius: 6px;
+      margin-top: 5px;
+    }
+
+    button {
+      background: #2a6592;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      margin-top: 15px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    button:hover {
+      background: #1d496b;
+      transform: scale(1.05);
+    }
+
+    #searchBox {
+      display: block;
+      margin: 20px auto;
+      padding: 10px;
+      width: 60%;
+      border: 1px solid #aaa;
+      border-radius: 20px;
+      font-size: 15px;
+      box-shadow: 0px 2px 6px rgba(0,0,0,0.1);
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 95%;
+      margin: 20px auto;
+      background: #fff;
+      box-shadow: 0px 3px 12px rgba(0,0,0,0.1);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: center;
+    }
+
+    th {
+      background: #2a6592;
+      color: white;
+      font-size: 15px;
+    }
+
+    tr:nth-child(even) {
+      background: #f2f8fc;
+    }
+
+    tr:hover {
+      background: #e0f0fa;
+      transition: 0.3s;
+    }
+
+    .expiring {
+      color: #d9534f;
+      font-weight: bold;
+    }
+
+    .expired {
+      background: #ffe6e6 !important;
+      color: darkred;
+      font-weight: bold;
+    }
+
+    .edit-btn {
+      background: #5bc0de;
+      padding: 5px 10px;
+      border-radius: 5px;
+      color: white;
+      cursor: pointer;
+      border: none;
+    }
+    .edit-btn:hover {
+      background: #31b0d5;
+    }
+
+    /* Ripple Effect */
+    button .ripple {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.7);
+      width: 100px;
+      height: 100px;
+      animation: rippleAnim 0.6s linear;
+      pointer-events: none;
+      transform: scale(0);
+    }
+    @keyframes rippleAnim {
+      to {
+        transform: scale(4);
+        opacity: 0;
+      }
+    }
+
+    /* Floating Bubbles */
+    .bubble {
+      position: fixed;
+      bottom: -50px;
+      width: 20px;
+      height: 20px;
+      background: rgba(255, 255, 255, 0.4);
+      border-radius: 50%;
+      animation: floatUp linear forwards;
+      z-index: 0;
+    }
+    @keyframes floatUp {
+      to {
+        transform: translateY(-110vh);
+        opacity: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h2>💊 Medical Store Inventory</h2>
+
+  <!-- 🔐 Login Page -->
+  <div id="loginPage">
+    <form id="loginForm">
+      <h3>🔐 Login</h3>
+      <label>Username:
+        <input type="text" id="loginUser" required>
+      </label>
+      <label>Password:
+        <input type="password" id="loginPass" required>
+      </label>
+      <div style="margin-top:15px;">
+        <button type="submit">Login</button>
+        <button type="reset">Reset</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- 📦 Inventory System (Hidden until login) -->
+  <div id="inventoryPage" style="display:none;">
+
+    <form id="medicineForm">
+      <label>Medicine Name:
+        <input type="text" id="name" required>
+      </label>
+      <label>Batch Number (optional):
+        <input type="text" id="batch">
+      </label>
+      <label>Purchase Date (optional):
+        <input type="date" id="purchase">
+      </label>
+      <label>Expiry Date:
+        <input type="date" id="expiry" required>
+      </label>
+      <label>Price (₹) (optional):
+        <input type="number" id="price" min="0" step="0.01">
+      </label>
+      <button type="submit" id="submitBtn">➕ Add Medicine</button>
+    </form>
+
+    <input type="text" id="searchBox" placeholder="🔍 Search by name or batch number...">
+
+    <table id="medicineTable">
+      <tr>
+        <th>#</th>
+        <th>Name</th>
+        <th>Batch No.</th>
+        <th>Purchase Date</th>
+        <th>Expiry Date</th>
+        <th>Days Left</th>
+        <th>Price (₹)</th>
+        <th>Status</th>
+        <th>Action</th>
+      </tr>
+    </table>
+
+    <!-- Export Button -->
+    <div style="text-align:center;">
+      <button id="exportBtn">📂 Export to TXT</button>
+    </div>
+  </div>
+
+  <script>
+    // ✅ Login Logic
+    const USER = "admin";
+    const PASS = "1234";
+
+    document.getElementById("loginForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const u = document.getElementById("loginUser").value;
+      const p = document.getElementById("loginPass").value;
+
+      if(u === USER && p === PASS){
+        document.getElementById("loginPage").style.display = "none";
+        document.getElementById("inventoryPage").style.display = "block";
+        loadData(); 
+        refreshDaysLeft(); 
+      } else {
+        alert("❌ Wrong username or password!");
+      }
+    });
+
+    /* =============================
+       Inventory Script
+       ============================= */
+    let counter = 0;
+    const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    let editRow = null;
+
+    function calculateDaysLeft(expiryDate) {
+      const today = new Date();
+      today.setHours(0,0,0,0);
+      const expiry = new Date(expiryDate);
+      return Math.floor((expiry - today) / (1000 * 60 * 60 * 24));
+    }
+
+    function formatDate(dateInput) {
+      if(!dateInput) return "-";
+      const date = new Date(dateInput);
+      const day = String(date.getDate()).padStart(2,'0');
+      const month = months[date.getMonth()];
+      const year = date.getFullYear();
+      return `${day}-${month}-${year}`;
+    }
+
+    function convertDate(dateStr) {
+      if(!dateStr || dateStr === "-") return "";
+      const [day, mon, year] = dateStr.split("-");
+      const monthIndex = months.indexOf(mon);
+      return new Date(year, monthIndex, day).toISOString().split("T")[0];
+    }
+
+    function sortTable() {
+      const table = document.getElementById('medicineTable');
+      const rows = Array.from(table.rows).slice(1);
+      rows.sort((a,b)=> a.dataset.priority - b.dataset.priority);
+      rows.forEach((row,index)=>{
+        row.cells[0].textContent = index + 1;
+        table.appendChild(row);
+      });
+    }
+
+    function saveData() {
+      const rows = Array.from(document.querySelectorAll("#medicineTable tr:not(:first-child)"));
+      const medicines = rows.map(row => {
+        return {
+          name: row.cells[1].textContent,
+          batch: row.cells[2].textContent,
+          purchase: row.cells[3].textContent,
+          expiry: row.cells[4].textContent,
+          daysLeft: row.cells[5].textContent,
+          price: row.cells[6].textContent,
+          status: row.cells[7].textContent,
+          className: row.className,
+          priority: row.dataset.priority
+        };
+      });
+      localStorage.setItem("medicines", JSON.stringify(medicines));
+    }
+
+    function loadData() {
+      const data = JSON.parse(localStorage.getItem("medicines") || "[]");
+      const table = document.getElementById('medicineTable');
+      data.forEach((med, index) => {
+        const row = table.insertRow(-1);
+        row.dataset.priority = med.priority;
+        row.className = med.className;
+        row.innerHTML = `
+          <td>${index + 1}</td>
+          <td>${med.name}</td>
+          <td>${med.batch}</td>
+          <td>${med.purchase}</td>
+          <td>${med.expiry}</td>
+          <td>${med.daysLeft}</td>
+          <td>${med.price}</td>
+          <td>${med.status}</td>
+          <td><button class="edit-btn">Edit</button></td>
+        `;
+
+        row.querySelector('.edit-btn').addEventListener('click', ()=>{
+          editRow = row;
+          document.getElementById('name').value = med.name;
+          document.getElementById('batch').value = med.batch === "—" ? "" : med.batch;
+          document.getElementById('purchase').value = med.purchase === "-" ? "" : convertDate(med.purchase);
+          document.getElementById('expiry').value = convertDate(med.expiry);
+          document.getElementById('price').value = med.price === "-" ? "" : med.price.replace("₹","");
+          document.getElementById('submitBtn').textContent = "💾 Update Medicine";
+        });
+      });
+      counter = data.length;
+      sortTable();
+    }
+
+    function refreshDaysLeft() {
+      const table = document.getElementById("medicineTable");
+      const rows = Array.from(table.rows).slice(1);
+      rows.forEach((row) => {
+        const expiryStr = row.cells[4].textContent;
+        if(expiryStr && expiryStr !== "-") {
+          const expiryISO = convertDate(expiryStr);
+          const daysLeft = calculateDaysLeft(expiryISO);
+
+          let status = "Valid (" + daysLeft + " days left)";
+          let rowClass = "";
+          let priority = 3;
+
+          if(daysLeft < 0){
+            status = "EXPIRED (" + (-daysLeft) + " days ago)";
+            rowClass = "expired";
+            priority = 1;
+          } else if(daysLeft <= 30){
+            status = "Expiring soon (" + daysLeft + " days left)";
+            rowClass = "expiring";
+            priority = 2;
+          }
+
+          row.cells[5].textContent = daysLeft >= 0 ? daysLeft : "-";
+          row.cells[7].textContent = status;
+          row.className = rowClass;
+          row.dataset.priority = priority;
+        }
+      });
+
+      sortTable();
+      saveData();
+    }
+
+    document.getElementById('medicineForm').addEventListener('submit', function(e){
+      e.preventDefault();
+
+      const name = document.getElementById('name').value;
+      const batch = document.getElementById('batch').value || "—";
+      const purchaseInput = document.getElementById('purchase').value;
+      const expiryInput = document.getElementById('expiry').value;
+      const priceInput = document.getElementById('price').value;
+      const price = priceInput ? parseFloat(priceInput).toFixed(2) : "-";
+
+      const formattedPurchase = formatDate(purchaseInput);
+      const formattedExpiry = formatDate(expiryInput);
+      const daysLeft = calculateDaysLeft(expiryInput);
+
+      let status = "Valid (" + daysLeft + " days left)";
+      let rowClass = "";
+      let priority = 3;
+
+      if(daysLeft < 0){
+        status = "EXPIRED (" + (-daysLeft) + " days ago)";
+        rowClass = "expired";
+        priority = 1;
+      } else if(daysLeft <= 30){
+        status = "Expiring soon (" + daysLeft + " days left)";
+        rowClass = "expiring";
+        priority = 2;
+      }
+
+      if(editRow){
+        editRow.cells[1].textContent = name;
+        editRow.cells[2].textContent = batch;
+        editRow.cells[3].textContent = formattedPurchase;
+        editRow.cells[4].textContent = formattedExpiry;
+        editRow.cells[5].textContent = daysLeft >= 0 ? daysLeft : "-";
+        editRow.cells[6].textContent = price === "-" ? "-" : "₹"+price;
+        editRow.cells[7].textContent = status;
+        editRow.className = rowClass;
+        editRow.dataset.priority = priority;
+        editRow = null;
+        document.getElementById('submitBtn').textContent = "➕ Add Medicine";
+      } else {
+        counter++;
+        const table = document.getElementById('medicineTable');
+        const row = table.insertRow(-1);
+        row.dataset.priority = priority;
+        row.className = rowClass;
+        row.innerHTML = `
+          <td>${counter}</td>
+          <td>${name}</td>
+          <td>${batch}</td>
+          <td>${formattedPurchase}</td>
+          <td>${formattedExpiry}</td>
+          <td>${daysLeft >= 0 ? daysLeft : "-"}</td>
+          <td>${price === "-" ? "-" : "₹"+price}</td>
+          <td>${status}</td>
+          <td><button class="edit-btn">Edit</button></td>
+        `;
+
+        row.querySelector('.edit-btn').addEventListener('click', ()=>{
+          editRow = row;
+          document.getElementById('name').value = name;
+          document.getElementById('batch').value = batch === "—" ? "" : batch;
+          document.getElementById('purchase').value = purchaseInput;
+          document.getElementById('expiry').value = expiryInput;
+          document.getElementById('price').value = priceInput;
+          document.getElementById('submitBtn').textContent = "💾 Update Medicine";
+        });
+      }
+
+      sortTable();
+      saveData();
+      document.getElementById('medicineForm').reset();
+    });
+
+    document.getElementById('searchBox').addEventListener('keyup', function(){
+      const filter = this.value.toLowerCase();
+      const rows = document.querySelectorAll("#medicineTable tr:not(:first-child)");
+      rows.forEach(row=>{
+        const name = row.cells[1].textContent.toLowerCase();
+        const batch = row.cells[2].textContent.toLowerCase();
+        row.style.display = (name.includes(filter) || batch.includes(filter)) ? "" : "none";
+      });
+    });
+
+    document.getElementById('exportBtn').addEventListener('click', function(){
+      const rows = document.querySelectorAll("#medicineTable tr");
+      let data = "";
+      rows.forEach((row) => {
+        const cells = row.querySelectorAll("th, td");
+        let rowData = [];
+        cells.forEach((cell, idx) => {
+          if(idx < 8) rowData.push(cell.textContent.trim());
+        });
+        data += rowData.join(" | ") + "\n";
+      });
+      const blob = new Blob([data], { type: "text/plain" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "Medical_Inventory.txt";
+      link.click();
+    });
+
+    // 🌟 Decorations
+    // Typing Effect for Title
+    const title = document.querySelector("h2");
+    const titleText = title.textContent;
+    title.textContent = "";
+    let i = 0;
+    function typeEffect() {
+      if (i < titleText.length) {
+        title.textContent += titleText.charAt(i);
+        i++;
+        setTimeout(typeEffect, 100);
+      }
+    }
+    typeEffect();
+
+    // Ripple Effect on Buttons
+    document.querySelectorAll("button").forEach(btn => {
+      btn.addEventListener("click", function (e) {
+        const circle = document.createElement("span");
+        circle.classList.add("ripple");
+        circle.style.left = e.clientX - e.target.offsetLeft + "px";
+        circle.style.top = e.clientY - e.target.offsetTop + "px";
+        this.appendChild(circle);
+        setTimeout(() => circle.remove(), 600);
+      });
+    });
+
+    // Floating Bubbles
+    function createBubble() {
+      const bubble = document.createElement("div");
+      bubble.classList.add("bubble");
+      bubble.style.left = Math.random() * 100 + "vw";
+      bubble.style.animationDuration = 5 + Math.random() * 5 + "s";
+      document.body.appendChild(bubble);
+      setTimeout(() => bubble.remove(), 10000);
+    }
+    setInterval(createBubble, 1000);
+  </script>
+</body>
+</html>
